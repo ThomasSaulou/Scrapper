@@ -442,7 +442,7 @@ def CSVcreation(ListMission):
     valeurs=[[]]
     for i in range(len(ListMission)):
           job=ListMission[i]
-          description=job.description.replace("\n","")
+          description=job.description.replace("\n",". ")
 
           valeurs.append([str(job.jobtitle),str(job.companyname),str(job.location),
                         str(job.salary),str(job.typeContrat),str(job.workDays),
