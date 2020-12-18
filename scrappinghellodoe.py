@@ -413,7 +413,7 @@ def CSVcreation(ListMission):
     from os.path import join
 
     time = datetime.datetime.now()
-    date= str(time.day)+'_'+str(time.month)+'_'+str(time.year)
+    date= str(time.day)+'_'+str(time.month)+'_'+str(time.year)+'_'+str(time.minute)
     import os.path
     # Vérifier si le fichier existe ou non
 
