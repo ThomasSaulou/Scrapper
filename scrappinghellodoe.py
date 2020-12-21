@@ -226,8 +226,10 @@ def scrap(url,nbMission):
   a=0
   b=0
   listMission=[]
+ 
   n=0
   while n<nbMission  :
+
 
     link=url
     link+='&start='+str(a*10)
@@ -238,6 +240,7 @@ def scrap(url,nbMission):
     job_card = driver.find_elements_by_xpath('//div[contains(@class,"clickcard")]')
 
     for job in job_card:
+
             b+=1
             #print(job.text)
           # print('\n \n')
@@ -347,5 +350,4 @@ def CSVcreation(ListMission):
 
     f.close()
     print('\n Done: tu peux trouver le fichier CSV dans ton drive google @ '+save_path+'scrapping'+date+'.csv')
-
 
