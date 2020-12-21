@@ -226,7 +226,8 @@ def scrap(url,nbMission):
   a=0
   b=0
   listMission=[]
-  while nbMission<2 :
+  n=0
+  while n<nbMission  :
 
     link=url
     link+='&start='+str(a*10)
