@@ -2,10 +2,8 @@
 # HELLO DOE SCRAPPING 
 ## HELLO DOE SCRAPPING 
 import requests
-from bs4 import BeautifulSoup 
+
 import datetime
-
-
 
 from bs4 import BeautifulSoup
 from selenium.webdriver.firefox.options import Options
@@ -17,11 +15,15 @@ from itertools import zip_longest
 from webdriver_manager.chrome import ChromeDriverManager
 import sys
 sys.path.insert(0,'/usr/lib/chromium-browser/chromedriver')
+
+
+from selenium import webdriver
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
-
+wd = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
+wd.get("https://www.webite-url.com")
 
 
 ### ENTRER L'URL INDEED A SCRAPPER :
@@ -483,4 +485,7 @@ def CSVcreation(ListMission):
 
     f.close()
     print('\n Done: tu peux trouver le fichier CSV dans ton drive google @ '+save_path+'scrapping'+date+'.csv')
+
+
+
 
