@@ -4,17 +4,7 @@
 import requests
 from bs4 import BeautifulSoup 
 import datetime
-!pip install selenium
-from selenium import webdriver
-#!apt-get update # to update ubuntu to correctly run apt install
-!apt install chromium-chromedriver
-!cp /usr/lib/chromium-browser/chromedriver /usr/bin
-!pip install webdriver_manager
 
-
-!apt-get update # to update ubuntu to correctly run apt install
-!apt install chromium-chromedriver
-!cp /usr/lib/chromium-browser/chromedriver /usr/bin
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
@@ -492,4 +482,5 @@ def CSVcreation(ListMission):
 
     f.close()
     print('\n Done: tu peux trouver le fichier CSV dans ton drive google @ '+save_path+'scrapping'+date+'.csv')
+
 
