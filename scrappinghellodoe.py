@@ -226,7 +226,7 @@ def scrap(url,nbMission):
   a=0
   b=0
   listMission=[]
-  while nbMission<2 and a<100 :
+  while nbMission<2 :
 
     link=url
     link+='&start='+str(a*10)
@@ -291,9 +291,8 @@ def scrap(url,nbMission):
     for mission in listMission:
       
       mission.setDescription(mission.url)
-  for i in listMission:
-         i.setdescriptioninfo(i.description)     
-  return listMission
+      mission.setdescriptioninfo(i.description)     
+    return listMission
 
 
 def CSVcreation(ListMission):
