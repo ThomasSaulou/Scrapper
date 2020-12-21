@@ -228,8 +228,9 @@ def scrap(url,nbMission):
   listMission=[]
  
   n=0
+  print('ok')
   while n<nbMission  :
-
+    print('ok2')
 
     link=url
     link+='&start='+str(a*10)
@@ -240,6 +241,7 @@ def scrap(url,nbMission):
     job_card = driver.find_elements_by_xpath('//div[contains(@class,"clickcard")]')
 
     for job in job_card:
+            print('ok3')
 
             b+=1
             #print(job.text)
