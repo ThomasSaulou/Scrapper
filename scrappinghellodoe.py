@@ -7,13 +7,6 @@ listFormatDureeContrat=['de X à X mois','de X mois']
 listWordConnecteurs=["au","du"] 
 salaryFormat =[['XX,XX € par heure','€/heure'],['XXXXXX € par an','€/an'],['XXXXX € par mois','€/mois'],['XX € par heure','€/heure']]
 
-from selenium import webdriver
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-driver = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
-driver.get("https://fr.indeed.com/paris-Emplois-%C3%A9tudiant")
 
 class Mission:
   def __init__(self):
@@ -28,7 +21,7 @@ class Mission:
     self.volumeHoraire=0
     self.dureeContrat=0
     self.url=0
-  def setDescription(self,url):
+  def setDescription(self,driver,url):
     driver.get(url)
     self.description = driver.find_elements_by_xpath('//div[contains(@class,"jobDescriptionText")]')[0].text
     self.description = self.description.lower()
@@ -228,7 +221,7 @@ class Mission:
     self.workDays=self.getworkingdays(text)
 
 
-def scrap(url,nbMission):
+def scrap(driver,url,nbMission):
   a=0
   b=0
   listMission=[]
@@ -298,7 +291,7 @@ def scrap(url,nbMission):
                 #driver.get(link)
     
   for mission in listMission:
-      mission.setDescription(mission.url)
+      mission.setDescription(driver,mission.url)
       mission.setdescriptioninfo(mission.description)     
   return listMission
 
