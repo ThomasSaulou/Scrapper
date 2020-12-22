@@ -222,6 +222,7 @@ class Mission:
 
 
 def scrap(driver,url,nbMission):
+  import time
   a=0
   b=0
   listMission=[]
@@ -233,13 +234,15 @@ def scrap(driver,url,nbMission):
 
     link=url
     link+='&start='+str(a*10)
+    #print(link)
     driver.get(link)
     a+=1
     
     
-    job_card = driver.find_elements_by_xpath('//div[contains(@class,"clickcard")]')
-
+    job_card = driver.find_elements_by_xpath('//div[contains(@class,"row")]')
+    time.sleep(5)
     for job in job_card:
+            #print(job.text)
 
             b+=1
         #.   not all positions have salary
@@ -250,8 +253,10 @@ def scrap(driver,url,nbMission):
             
 
             if salary !="None": 
-                mission=Mission()  
+                mission=Mission() 
+                 
                 n+=1
+                print(str(n),'mission found')
      
                 mission.salary=salary   
         
@@ -287,6 +292,11 @@ def scrap(driver,url,nbMission):
                 mission.url=link
                 
                 listMission.append(mission)
+                #print('location=',location)
+                #print('salary=',salary)
+                #print('companie=',companie)
+                #print('title=',title)
+                #print('link=',link)
          
                 #driver.get(link)
     
