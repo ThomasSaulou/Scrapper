@@ -7,7 +7,13 @@ listFormatDureeContrat=['de X à X mois','de X mois']
 listWordConnecteurs=["au","du"] 
 salaryFormat =[['XX,XX € par heure','€/heure'],['XXXXXX € par an','€/an'],['XXXXX € par mois','€/mois'],['XX € par heure','€/heure']]
 
-
+from selenium import webdriver
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+driver = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
+driver.get("https://fr.indeed.com/paris-Emplois-%C3%A9tudiant")
 
 class Mission:
   def __init__(self):
@@ -228,9 +234,9 @@ def scrap(url,nbMission):
   listMission=[]
  
   n=0
-  print('ok')
+
   while n<nbMission  :
-    print('ok2')
+
 
     link=url
     link+='&start='+str(a*10)
@@ -241,26 +247,21 @@ def scrap(url,nbMission):
     job_card = driver.find_elements_by_xpath('//div[contains(@class,"clickcard")]')
 
     for job in job_card:
-            print('ok3')
 
             b+=1
-            #print(job.text)
-          # print('\n \n')
-
         #.   not all positions have salary
             try:
-                
                 salary = job.find_element_by_xpath('.//span[@class="salaryText"]').text
             except:
                 salary = "None"
             
 
             if salary !="None": 
-                
                 mission=Mission()  
                 n+=1
-                #.  tells only to look at the element  
-                mission.salary=salary     
+     
+                mission.salary=salary   
+        
 
             #.  not all companies have review
                 #try:
@@ -273,7 +274,7 @@ def scrap(url,nbMission):
                     location = job.find_element_by_xpath('.//span[contains(@class,"location")]').text
                 except:
                     location = "None"
-            #.  tells only to look at the element       
+       
 
                 mission.location=location
                 
@@ -283,6 +284,7 @@ def scrap(url,nbMission):
                     title = job.find_element_by_xpath('.//h2[@class="title"]//a').get_attribute(name="title")
       
                 mission.title=title
+    
                 link=job.find_element_by_xpath('.//h2[@class="title"]//a').get_attribute(name="href")
 
                 
@@ -292,13 +294,13 @@ def scrap(url,nbMission):
                 mission.url=link
                 
                 listMission.append(mission)
+         
                 #driver.get(link)
     
-    for mission in listMission:
-      
+  for mission in listMission:
       mission.setDescription(mission.url)
-      mission.setdescriptioninfo(i.description)     
-    return listMission
+      mission.setdescriptioninfo(mission.description)     
+  return listMission
 
 
 def CSVcreation(ListMission):
