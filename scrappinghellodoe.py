@@ -422,7 +422,6 @@ def CSVcreation(df,file):
     print('\n Done: tu peux trouver le fichier CSV dans ton drive google @ '+save_path+'scrapping'+date+'.csv')
 
 def scrap(driver,url,nbmin):
-    options = webdriver.ChromeOptions()
     df = pd.DataFrame(columns=["Title","Location","Company","Salary","URL"])
     i=0
     n=0
@@ -434,38 +433,39 @@ def scrap(driver,url,nbmin):
       
 
       for job in driver.find_elements_by_class_name('result'):
+        if(n<nbmin):
 
-        soup = BeautifulSoup(job.get_attribute('innerHTML'),'html.parser')
-        
-        try:
-          title = soup.find("a",class_="jobtitle").text.replace("\n","").strip()
+          soup = BeautifulSoup(job.get_attribute('innerHTML'),'html.parser')
           
-        except:
-          title = 'None'
+          try:
+            title = soup.find("a",class_="jobtitle").text.replace("\n","").strip()
+            
+          except:
+            title = 'None'
 
-        try:
-          location = soup.find(class_="location").text
-        except:
-          location = 'None'
+          try:
+            location = soup.find(class_="location").text
+          except:
+            location = 'None'
 
-        try:
-          company = soup.find(class_="company").text.replace("\n","").strip()
-        except:
-          company = 'None'
+          try:
+            company = soup.find(class_="company").text.replace("\n","").strip()
+          except:
+            company = 'None'
 
-        try:
-          salary = soup.find(class_="salary").text.replace("\n","").strip()
-        except:
-          salary = 'None'
-          
-        try:
-          job_url=job.find_element_by_xpath('.//h2[@class="title"]//a').get_attribute(name="href")
-        except:
-          job_url='None' 
-        if salary!='None':   
-          df = df.append({'Title':title,'Location':location,"Company":company,"Salary":salary,"URL":job_url},ignore_index=True)
-          n+=1
-          print("Got these many results:",n)
+          try:
+            salary = soup.find(class_="salary").text.replace("\n","").strip()
+          except:
+            salary = 'None'
+            
+          try:
+            job_url=job.find_element_by_xpath('.//h2[@class="title"]//a').get_attribute(name="href")
+          except:
+            job_url='None' 
+          if salary!='None':   
+            df = df.append({'Title':title,'Location':location,"Company":company,"Salary":salary,"URL":job_url},ignore_index=True)
+            n+=1
+            print("Got these many results:",n)
     return df
 
 def getDescription(driver,URLs,df):
@@ -519,6 +519,7 @@ def scraphellodoe(driver,url,nbmin):
     mission.url=df.iloc[i]['URL']
     mission.description=df.iloc[i]['Description']
     mission.setdescriptioninfo(mission.description)
+    mission=updateMission(mission)
     ListMission.append(mission)
   df=switchURLDesc(df) 
   df=updateTable(ListMission,df) 
