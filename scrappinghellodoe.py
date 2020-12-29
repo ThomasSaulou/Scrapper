@@ -47,7 +47,13 @@ listFormatDureeContrat=['de X à X mois','de X mois']
 listWordConnecteurs=["au","du"] 
 salaryFormat =[['XX,XX € par heure','€/heure'],['XXXXXX € par an','€/an'],['XXXXX € par mois','€/mois'],['XX € par heure','€/heure']]
 
-
+semantique = {'heure':['heure','XXhXX','XXh','Xh','XX heures','X:XX','XX:XX'],
+              'jour':["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"],
+              'argent':['€','euros','euro'],
+              'periode':['jour','jours','semaine','semaines','mois','années','année','hebdo','hebdomadaire']
+              }
+              
+            
 
 Category = {'Accueil Visiteurs': ["hôtesse","hôte","hôte d'accueil","hôtesse d'accueil","guichetier","secrétaire hôte","standardiste","agent d'accueil","receptionniste","hôte(sse) d'accueil","hote(sse) d'accueil"], 
         'Service': ["serveur","serveur polyvalent","employé de restauration","employé de restauration rapide","employé polyvalent en restauration","barista","barman","barmaid","serveuse","limonadier","équipier polyvalent restauration rapide","équipier polyvalent restauration","garçon limonadier","extra en restauration","serveur en salle"], 
@@ -58,7 +64,7 @@ Category = {'Accueil Visiteurs': ["hôtesse","hôte","hôte d'accueil","hôtesse
         "Accueil Hôtellerie":["veilleur de nuit","veilleuse de nuit","gardien veilleur","receptionniste","surveillant de nuit"],
         "Street Marketing":["distributeur d'imprimés publicitaires","distributeur/trice d'imprimés publicitaires","distributeur de prospectus","distributeur de journaux","distribution boites aux lettres","distributeur de presse","distributeur de presse gratuite","distributeur de flyers","distributeur de flyer","distribution de flyers"],
         "Animation / Démonstration":["animateur commercial","animateur street marketing"],
-        "Baby-sitting":["babysitter","baby-sitter","garde d'enfant","garde d'enfants","garde d'enfant à domicile","babysitting","baby-sitting"],
+        "Baby-sitting":["babysitter","baby-sitter","garde d'enfant","garde d'enfants","garde d'enfant à domicile","babysitting","baby-sitting","sortie d'ecole","sortie d'école","garde d’enfant"],
         "Inventaire":["inventoriste","équipier en inventaire","auditeur en inventaire"],
         "Déménagement":["déménageur"],
         "Manutention":["manutentionnaires","manutentionnaire","manutention","employé logistique","équipier logistique","agent logistique"],
@@ -224,7 +230,7 @@ class Mission:
                     if (n==-1):
                       n=-1 
                     else:
-                        typeContrat=listWordTypeEmploi[i]
+                        typeContrat+=' ' + listWordTypeEmploi[i]
             n = text.find('temps partiel')
             if (n==-1):
                 n=-1 
@@ -422,6 +428,7 @@ def CSVcreation(df,file):
     print('\n Done: tu peux trouver le fichier CSV dans ton drive google @ '+save_path+'scrapping'+date+'.csv')
 
 def scrap(driver,url,nbmin):
+    options = webdriver.ChromeOptions()
     df = pd.DataFrame(columns=["Title","Location","Company","Salary","URL"])
     i=0
     n=0
@@ -433,39 +440,38 @@ def scrap(driver,url,nbmin):
       
 
       for job in driver.find_elements_by_class_name('result'):
-        if(n<nbmin):
 
-          soup = BeautifulSoup(job.get_attribute('innerHTML'),'html.parser')
+        soup = BeautifulSoup(job.get_attribute('innerHTML'),'html.parser')
+        
+        try:
+          title = soup.find("a",class_="jobtitle").text.replace("\n","").strip()
           
-          try:
-            title = soup.find("a",class_="jobtitle").text.replace("\n","").strip()
-            
-          except:
-            title = 'None'
+        except:
+          title = 'None'
 
-          try:
-            location = soup.find(class_="location").text
-          except:
-            location = 'None'
+        try:
+          location = soup.find(class_="location").text
+        except:
+          location = 'None'
 
-          try:
-            company = soup.find(class_="company").text.replace("\n","").strip()
-          except:
-            company = 'None'
+        try:
+          company = soup.find(class_="company").text.replace("\n","").strip()
+        except:
+          company = 'None'
 
-          try:
-            salary = soup.find(class_="salary").text.replace("\n","").strip()
-          except:
-            salary = 'None'
-            
-          try:
-            job_url=job.find_element_by_xpath('.//h2[@class="title"]//a').get_attribute(name="href")
-          except:
-            job_url='None' 
-          if salary!='None':   
-            df = df.append({'Title':title,'Location':location,"Company":company,"Salary":salary,"URL":job_url},ignore_index=True)
-            n+=1
-            print("Got these many results:",n)
+        try:
+          salary = soup.find(class_="salary").text.replace("\n","").strip()
+        except:
+          salary = 'None'
+          
+        try:
+          job_url=job.find_element_by_xpath('.//h2[@class="title"]//a').get_attribute(name="href")
+        except:
+          job_url='None' 
+        if salary!='None':   
+          df = df.append({'Title':title,'Location':location,"Company":company,"Salary":salary,"URL":job_url},ignore_index=True)
+          n+=1
+          print("Got these many results:",n)
     return df
 
 def getDescription(driver,URLs,df):
@@ -489,6 +495,7 @@ def switchURLDesc(df):
 def updateTable(ListMission,df):
   for i in range(len(ListMission)):
     mission=ListMission[i]
+    mission=updateMission(mission)
     df['Description'][i]=mission.description
     df['Title'][i]=mission.title
     df['Location'][i]=mission.location
@@ -519,9 +526,338 @@ def scraphellodoe(driver,url,nbmin):
     mission.url=df.iloc[i]['URL']
     mission.description=df.iloc[i]['Description']
     mission.setdescriptioninfo(mission.description)
-    mission=updateMission(mission)
     ListMission.append(mission)
   df=switchURLDesc(df) 
   df=updateTable(ListMission,df) 
   return df
     
+
+import re
+semantique = {'heure':['heure','\d\dh\d\d',"\d\dh",'\dh','\d\d heures','\d:\d\d','\d\d:\d\d','/heure','midi','minuit'],
+              'jour':["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche","lundis","mardis","mercredis","jeudis","vendredis","samedis","dimanches","-dimanche"],
+              'argent':['€','euros','euro '],
+              'periode':['jour','jours','semaine','semaines','mois','années','année','hebdo','hebdomadaire','/s'],
+              'link':['de','-','à',"jusqu'à",'au','a'],
+              'ou':['ou'],
+              #'flexible':['flexible'],
+              'flexible':["payé à l’heure","autant que vous voulez",'flexible','flexibles','en fonction de vos disponibilités','adaptables'],
+              'horaires':['horaires:'],
+              'NOK':['contacter'],
+              'durée':['durée du contrat :']
+             # 'sortie école':["sortie d’école"],
+             
+              }
+
+
+
+
+def findstrict(word,val):
+  if word.startswith(val):
+    if  word.endswith(val):
+      return True
+  return False
+  
+
+class TexteAnalyse:
+      def __init__(self,description):
+        self.description=description
+        self.listsentence=[]
+        for i in range(len(description)):
+          if description[i]=="." and i<len(description)-1:
+            if description[i-1].isnumeric() and description[i+1].isnumeric(): 
+              s=list(description)
+              s[i]=','
+              description="".join(s)
+        listsent=description.split(".")
+        for i in listsent:
+          self.listsentence.append(phrase(i))
+      def displayDescription(self):
+        print(self.description)
+      def displaySentencelabel(self):
+        for i in self.listsentence:
+          i.displaylabel()
+      def displayInterpret(self):
+        for i in self.listsentence:  
+          i.displayInterpretation() 
+      def getHoraire(self):
+        listhoraire=[]
+        for i in self.listsentence :
+          ok=True
+   
+          listinterpret=i.listinterpret
+          for interpret in listinterpret:
+            
+            if interpret.meaning=='NOK':
+              ok=False
+          if ok:    
+            for interpret in listinterpret:
+              
+              if interpret.meaning=='sortie ecole':
+                listhoraire.append('sortie école')
+              if interpret.meaning=='plageHoraire':
+                for word in interpret.listWords:
+                  
+                    if word.label[0]=='jour' or word.label[0]=='heure' or word.label=='heure':
+                      listhoraire.append(word.word)
+                   
+        return listhoraire
+
+
+
+
+      def getVolumeHoraire(self): 
+        listVolume=[]
+        for i in self.listsentence :
+
+          listinterpret=i.listinterpret
+          for interpret in listinterpret:
+
+            if interpret.meaning=='volumeHoraire':
+
+              for word in interpret.listWords:
+   
+                  if word.label[0]=='heure':
+          
+                    listVolume.append(word.word)
+                  
+        return listVolume        
+      def getFlexible(self): 
+        for i in self.listsentence :
+    
+          listinterpret=i.listinterpret
+          for interpret in listinterpret:
+            if interpret.meaning=='flexible':
+              return True 
+        return False    
+      def getWorkdays(self):
+        listDays=[]
+        for i in self.listsentence :
+          
+          listinterpret=i.listinterpret
+          for interpret in listinterpret:
+            
+            if interpret.meaning=='WorkDays':
+              for word in interpret.listWords:                  
+                  if word.label[0]=='jour':
+                    listDays.append(word.word)
+        return listDays 
+        
+
+       
+              
+        
+class phrase:
+      def __init__(self,sentence):
+        self.sentence=sentence
+        self.listword=sentence.split(" ")
+        self.listwordlabel=[]
+        for i in self.listword:
+          self.listwordlabel.append(word(i))
+        self.listinterpret=self.interpretationSentence()  
+      def displaySentence(self):
+          print(self.sentence) 
+      def displaylabel(self):
+          listdisp=''
+          for i in self.listwordlabel:
+            w,l=i.getwordlabel()
+            listdisp+=' '+w
+            if len(l)!=0:
+          
+              listdisp+=' (='
+              for i in l:
+                listdisp+=i+','
+              listdisp+=' )'  
+          print(listdisp)
+      def displayInterpretation(self):
+        self.displaylabel() 
+        for i in self.listinterpret:
+          i.displayinterpret()
+      def interpretationSentence(self):
+        listlab=[]
+        listinterpret=[]
+        listindexmot=[]
+        for i in semantique['flexible']:
+          n=self.sentence.find(i)
+          if n!=-1:
+            meaning=interpret('flexible')
+            listinterpret.append(meaning)
+
+
+
+        
+        for j in range(len(self.listwordlabel)):
+          wordz=self.listwordlabel[j]
+          for i in range(len(wordz.label)):
+            listindexmot.append(j)
+          
+            listlab.append(wordz.label[i]) 
+        
+        for i in range(len(listlab)):
+          if i<len(listlab)-2 and listlab[i]=='jour' and listlab[i+1]=='link' and listlab[i+2]=='jour':
+              
+              meaning=interpret('WorkDays')
+              a=0
+              for jour in semantique['jour']:
+                
+                if jour==self.listwordlabel[listindexmot[i]].word :
+                  a=1
+                  meaning.listIndex.append(listindexmot[i])
+                 
+                  wo=word(jour)
+                  wo.label=['jour']
+                  meaning.listWords.append(wo)
+
+                elif  jour==self.listwordlabel[listindexmot[i]+2].word:
+                  a=2
+                  meaning.listIndex.append(listindexmot[i+1])
+                  wo=word(jour)
+                  wo.label=['jour']
+                  meaning.listWords.append(wo)
+                  
+                elif a==1:
+                  meaning.listIndex.append(listindexmot[i+1])
+                  wo=word(jour)
+                  wo.label=['jour']
+                  meaning.listWords.append(wo)
+                 
+              listinterpret.append(meaning)   
+          elif   listlab[i]=='jour':
+              meaning=interpret('WorkDays')
+              meaning.listIndex.append(listindexmot[i])
+              meaning.listWords.append(self.listwordlabel[listindexmot[i]])
+              listinterpret.append(meaning)
+
+          if listlab[i]=='NOK':
+            meaning=interpret('NOK')
+            meaning.listIndex.append(listindexmot[i])
+            meaning.listWords.append(self.listwordlabel[listindexmot[i]])
+            listinterpret.append(meaning)
+          if i<len(listlab)-1 and listlab[i]=='argent' and listlab[i+1]=='heure':
+           
+            meaning=interpret('salaire')
+            meaning.listIndex.append(listindexmot[i])
+            meaning.listIndex.append(listindexmot[i+1])
+            meaning.listWords.append(self.listwordlabel[listindexmot[i]])
+            meaning.listWords.append(self.listwordlabel[listindexmot[i+1]])
+            listinterpret.append(meaning)
+          if i<len(listlab)-1 and listlab[i]=='heure' and listlab[i+1]=='periode':
+            meaning=interpret('volumeHoraire')  
+            if listlab[i-1]=='ou' :
+              meaning.listIndex.append(listindexmot[i-2])
+              meaning.listWords.append(self.listwordlabel[listindexmot[i-2]])
+
+            
+            meaning.listIndex.append(listindexmot[i])
+            meaning.listIndex.append(listindexmot[i+1])
+            meaning.listWords.append(self.listwordlabel[listindexmot[i]])
+            meaning.listWords.append(self.listwordlabel[listindexmot[i+1]])
+            listinterpret.append(meaning)
+  
+          if i<len(listlab)-2 and listlab[i]=='heure' and  listlab[i+1]=='link'  and listlab[i+2]=='heure' :
+              meaning=interpret('plageHoraire')
+              if listlab[i-1]=='jour' or listlab[i-2]=='jour':
+              
+
+                meaning.listIndex.append(listindexmot[i-1])
+                meaning.listWords.append(self.listwordlabel[listindexmot[i-1]])
+              meaning.listIndex.append(listindexmot[i])
+              meaning.listWords.append(self.listwordlabel[listindexmot[i]])
+              meaning.listIndex.append(listindexmot[i+2])
+              meaning.listWords.append(self.listwordlabel[listindexmot[i+2]])
+              listinterpret.append(meaning)
+
+
+              
+
+
+          if listlab[i]=='horaires':
+            meaning=interpret('plageHoraire')
+            for j in range(2,len(self.listword)):
+              self.listwordlabel[j].label='heure'
+            
+              meaning.listIndex.append(j)
+              meaning.listWords.append(self.listwordlabel[j])
+              listinterpret.append(meaning)
+   
+          
+        return listinterpret
+
+
+class interpret:
+    def __init__(self,meaning):
+        self.listIndex=[]
+        self.listWords=[]
+        self.meaning=meaning
+    def displayinterpret(self):
+      #for i in self.listIndex:
+        #print(i)
+      for i in self.listWords:
+        wordlabel=i.getwordlabel()
+        print(wordlabel[0],wordlabel[1])
+      print(self.meaning)
+
+
+class word:
+  def __init__(self,word):
+    self.word=word
+    self.label=[]
+    self.labelised(word)
+    
+  def labelised(self,word):
+    previous=''
+    for i in semantique:
+      for j in semantique[i]:
+        x=re.findall('^'+j+'$',self.word)
+        if len(x)!=0:
+          if previous!=i:
+            self.label.append(i)
+            previous=i    
+  def getwordlabel(self):
+        return self.word,self.label  
+
+
+def affinage(df):
+  for i in range(len(df)):
+    title=df.iloc[i]['Title'].lower()
+    description=title+'. '
+    description+=str(df.iloc[i]['Description'])
+    texte=TexteAnalyse(description)
+    flex=texte.getFlexible()
+    df['Horaires'][i]=texte.getHoraire()
+    df['VolumeHoraire'][i]=texte.getVolumeHoraire()
+    df['WorkDays'][i]=texte.getWorkdays()
+    n=description.find("sortie d’école")
+    if n!=-1:
+      df['Horaires'][i]="Flexible"
+      df['WorkDays'][i]=["lundi",'mardi','mercredi','jeudi','vendredi']
+      df['VolumeHoraire'][i]="variable"
+      df['dureeContrat'][i]="Flexible"
+    if flex:
+      df['Horaires'][i]="Flexible"
+      df['WorkDays'][i]="Flexible"
+      df['VolumeHoraire'][i]="À la carte"
+      df['dureeContrat'][i]="Flexible"
+  return df 
+def cleaning(df):
+    for i in range(len(df)):
+        horaire=df.iloc[i]['Horaires']
+        workdays=df.iloc[i]['WorkDays']
+        listday=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche']
+        listhoraire=[]
+        listworkdays=[]
+        if workdays!='Flexible':
+           for j in workdays:
+                for day in listday:
+                  if j==day or j==day+'s':
+                    if day not in listworkdays:
+                     listworkdays.append(day)
+           df['WorkDays'][i]= listworkdays
+        if horaire!='Flexible':
+          for j in horaire:
+            if j not in listhoraire and j!='et' and j!='le' and j!='':
+              listhoraire.append(j)
+          df['Horaires'][i]= listhoraire
+    return df
+
+
+
