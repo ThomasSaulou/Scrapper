@@ -858,5 +858,3 @@ def cleaning(df):
           df['Horaires'][i]= listhoraire
     return df
 
-
-
