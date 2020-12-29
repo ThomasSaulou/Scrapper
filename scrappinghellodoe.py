@@ -428,7 +428,6 @@ def CSVcreation(df,file):
     print('\n Done: tu peux trouver le fichier CSV dans ton drive google @ '+save_path+'scrapping'+date+'.csv')
 
 def scrap(driver,url,nbmin):
-    options = webdriver.ChromeOptions()
     df = pd.DataFrame(columns=["Title","Location","Company","Salary","URL"])
     i=0
     n=0
